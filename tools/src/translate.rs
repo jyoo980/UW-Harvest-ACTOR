@@ -287,7 +287,7 @@ fn dispatch_translate(paths: &Paths, battery: &str, name: &str, is_lib: bool) ->
         Agent::Kimi => kimi_translate_case(paths, battery, name, is_lib),
         Agent::Oneshot => oneshot_translate_case(paths, battery, name, is_lib),
         Agent::Kiro | Agent::Claude => {
-            let f = if is_lib { "translate-library.md" } else { "translate-executable.md" };
+            let f = if is_lib { "translate-library-with-specs.md" } else { "translate-executable.md" };
             let prompt = std::fs::read_to_string(paths.prompts_dir.join(f)).unwrap_or_default();
             translate_case(paths, battery, name, &prompt)
         }
@@ -310,14 +310,14 @@ fn dispatch_translate(paths: &Paths, battery: &str, name: &str, is_lib: bool) ->
         Agent::ClaudeNoFeatures => {
             // E2: cmake-features ablation only affects shared-source cases.
             // Independent (executable/library) cases reuse the engineered claude prompts.
-            let f = if is_lib { "translate-library.md" } else { "translate-executable.md" };
+            let f = if is_lib { "translate-library-with-specs.md" } else { "translate-executable.md" };
             let prompt = std::fs::read_to_string(paths.prompts_dir.join(f)).unwrap_or_default();
             translate_case(paths, battery, name, &prompt)
         }
         Agent::ClaudeNoSubtask => {
             // E6: subtask-decomposition ablation only affects shared-source cases.
             // Independent (executable/library) cases reuse the engineered claude prompts.
-            let f = if is_lib { "translate-library.md" } else { "translate-executable.md" };
+            let f = if is_lib { "translate-library-with-specs.md" } else { "translate-executable.md" };
             let prompt = std::fs::read_to_string(paths.prompts_dir.join(f)).unwrap_or_default();
             translate_case(paths, battery, name, &prompt)
         }
@@ -325,13 +325,13 @@ fn dispatch_translate(paths: &Paths, battery: &str, name: &str, is_lib: bool) ->
             // E4: SWAP project-type prompts. Libraries get the executable prompt;
             // executables get the library prompt. Directly answers Reviewer 2's
             // question about cross-prompt application.
-            let f = if is_lib { "translate-executable.md" } else { "translate-library.md" };
+            let f = if is_lib { "translate-executable.md" } else { "translate-library-with-specs.md" };
             let prompt = std::fs::read_to_string(paths.prompts_dir.join(f)).unwrap_or_default();
             translate_case(paths, battery, name, &prompt)
         }
         Agent::CodexGpt55 | Agent::CodexGpt54 => {
             // Codex on Bedrock — same prompts as Claude Code, different harness.
-            let f = if is_lib { "translate-library.md" } else { "translate-executable.md" };
+            let f = if is_lib { "translate-library-with-specs.md" } else { "translate-executable.md" };
             let prompt = std::fs::read_to_string(paths.prompts_dir.join(f)).unwrap_or_default();
             translate_case(paths, battery, name, &prompt)
         }
@@ -402,7 +402,7 @@ pub fn run_harvest_bench(paths: &Paths, projects: &[battery::HarvestBenchProject
     // harvest-bench test_case/ is always a library (a C lib the suite links by
     // ABI). Reuse the same project-type-dispatching library prompt the
     // test-corpus/CRUST paths use — it handles the cdylib / FFI-type case.
-    let prompt = std::fs::read_to_string(paths.prompts_dir.join("translate-library.md"))
+    let prompt = std::fs::read_to_string(paths.prompts_dir.join("translate-library-with-specs.md"))
         .context("reading translate-library.md for harvest-bench")?;
 
     anyhow::ensure!(!projects.is_empty(),
@@ -1520,7 +1520,7 @@ fn oneshot_llm_translate(
     // Collect C files and detect project kind
     let files_json = collect_c_files_json(&input_test_case)?;
     let is_lib = detect_is_library(&input_test_case).unwrap_or(is_lib_hint);
-    let prompt_file = if is_lib { "translate-library.md" } else { "translate-executable.md" };
+    let prompt_file = if is_lib { "translate-library-with-specs.md" } else { "translate-executable.md" };
     let system_prompt = std::fs::read_to_string(paths.prompts_dir.join(prompt_file))
         .with_context(|| format!("reading {prompt_file}"))?;
 
