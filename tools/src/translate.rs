@@ -606,7 +606,7 @@ pub fn prompt_file_for(agent: Agent, kind: PromptKind) -> Option<&'static str> {
     match agent {
         // One arm on purpose: the backend varies, the methodology does not.
         Agent::Kiro | Agent::Claude | Agent::OpenCode => Some(match kind {
-            Library => "translate-library.md",
+            Library => "translate-library-with-specs.md",
             Executable => "translate-executable.md",
             Shared => "translate-shared.md",
             Verify => "verify.md",
@@ -631,13 +631,13 @@ pub fn prompt_file_for(agent: Agent, kind: PromptKind) -> Option<&'static str> {
         // E2 and E6 differ from `claude` on shared-source cases only, so their
         // independent cases deliberately read the unmodified prompts.
         Agent::ClaudeNoFeatures => match kind {
-            Library => Some("translate-library.md"),
+            Library => Some("translate-library-with-specs.md"),
             Executable => Some("translate-executable.md"),
             Shared => Some("ablations/translate-no-features-shared.md"),
             Verify => None,
         },
         Agent::ClaudeNoSubtask => match kind {
-            Library => Some("translate-library.md"),
+            Library => Some("translate-library-with-specs.md"),
             Executable => Some("translate-executable.md"),
             Shared => Some("ablations/translate-no-subtask-shared.md"),
             Verify => None,
@@ -647,20 +647,20 @@ pub fn prompt_file_for(agent: Agent, kind: PromptKind) -> Option<&'static str> {
             // prompt and vice versa. Shared-source cases have no counterpart to swap
             // with, so they read the standard shared prompt.
             Library => Some("translate-executable.md"),
-            Executable => Some("translate-library.md"),
+            Executable => Some("translate-library-with-specs.md"),
             Shared => Some("translate-shared.md"),
             Verify => None,
         },
         // Same filenames as claude's, read from `prompts/codex/`: the methodology is
         // identical and only the sub-agent protocol differs, Codex having no Task tool.
         Agent::CodexGpt56Sol => Some(match kind {
-            Library => "translate-library.md",
+            Library => "translate-library-with-specs.md",
             Executable => "translate-executable.md",
             Shared => "translate-shared.md",
             Verify => "verify.md",
         }),
         Agent::CodexGpt55 | Agent::CodexGpt54 => match kind {
-            Library => Some("translate-library.md"),
+            Library => Some("translate-library-with-specs.md"),
             Executable => Some("translate-executable.md"),
             Shared => Some("translate-shared.md"),
             Verify => None,
@@ -669,7 +669,7 @@ pub fn prompt_file_for(agent: Agent, kind: PromptKind) -> Option<&'static str> {
             // A single LLM call with the project-type prompt as its system message.
             // `oneshot_llm_translate` detects the type from CMakeLists even for a
             // shared-source group, so neither Shared nor Verify is ever asked for.
-            Library => Some("translate-library.md"),
+            Library => Some("translate-library-with-specs.md"),
             Executable => Some("translate-executable.md"),
             Shared | Verify => None,
         },
@@ -2823,7 +2823,7 @@ mod tests {
         // `require_prompt` refuses an absent one, failing ahead of the code under test.
         let prompts = root.join("prompts/oneshot");
         std::fs::create_dir_all(&prompts).unwrap();
-        for f in ["translate-library.md", "translate-executable.md"] {
+        for f in ["translate-library-with-specs.md", "translate-executable.md"] {
             std::fs::write(
                 prompts.join(f),
                 "translate this C project into Rust.".repeat(8),
@@ -3203,7 +3203,7 @@ mod tests {
             );
             // `require_prompt` refuses an absent one, which would fail ahead of the tee.
             std::fs::create_dir_all(&paths.prompts_dir).unwrap();
-            for f in ["translate-library.md", "translate-executable.md"] {
+            for f in ["translate-library-with-specs.md", "translate-executable.md"] {
                 std::fs::write(
                     paths.prompts_dir.join(f),
                     "translate this C project into Rust.".repeat(8),
